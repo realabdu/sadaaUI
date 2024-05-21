@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>تقييم العملاء</title>
+    <style>
+        @font-face {
+            font-family: "Dubai";
+            src: url("DubaiW23-Regular.woff2") format("woff2"),
+                url("DubaiW23-Regular.woff") format("woff");
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f2f2f2; /* Light background color */
+            font-family: "Dubai", Arial, sans-serif;
+            color: #1a1a1a; /* Dark text color */
+            direction: ltr; /* Set text direction to left-to-right */
+        }
+
+        .container {
+            text-align: center;
+            transition: opacity 0.5s ease-in-out;
+            width: 80vw; /* Ensure the container takes up 80% of the viewport width */
+            height: 80vh; /* Ensure the container takes up 80% of the viewport height */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #language-switch {
+            margin-bottom: 20px;
+        }
+
+        .language-button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            font-size: 1em; /* Smaller text for language buttons */
+            color: #ffffff;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .language-button:hover,
+        .language-button:focus {
+            background-color: #0056b3;
+            transform: scale(1.05);
+            outline: none;
+        }
+
+        #question, #mcq-question, #open-ended-question, #thanks-message, #final-thanks-message {
+            font-size: 2.5em; /* Larger text for questions */
+            color: #1a202c;
+        }
+
+        .emoji-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .emoji-button {
+            margin: 10px;
+            padding: 0;
+            border: none;
+            background: none;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .emoji-button img {
+            width: 10em; /* Larger emojis */
+            height: 10em; /* Larger emojis */
+        }
+
+        .emoji-button:hover,
+        .emoji-button:focus {
+            transform: scale(1.1);
+            outline: none;
+        }
+
+        .mcq-container, .open-ended-container, .thanks-container, .final-thanks-container {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .mcq-option {
+            display: block;
+            margin: 10px 0;
+            padding: 15px 25px;
+            font-size: 1.2em;
+            color: #ffffff;
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .mcq-option:hover,
+        .mcq-option:focus {
+            background-color: #45a049;
+            transform: scale(1.05);
+            outline: none;
+        }
+
+        .open-ended-input {
+            margin: 20px 0;
+            padding: 15px;
+            font-size: 1.2em;
+            width: 80%;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            resize: vertical;
+        }
+
+        .submit-button, .continue-button {
+            padding: 15px 25px;
+            font-size: 1.2em;
+            color: #ffffff;
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .submit-button:hover, .continue-button:hover,
+        .submit-button:focus, .continue-button:focus {
+            background-color: #45a049;
+            transform: scale(1.05);
+            outline: none;
+        }
+
+        .progress-bar-container {
+            position: absolute;
+            top: 0;
+            width: 100%;
+            padding: 10px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            width: 0;
+            background-color: #4CAF50;
+            transition: width 0.2s;
+        }
+    </style>
+</head>
+<body>
+    <audio id="button-sound" src="pop2.mp3"></audio>
+    <div class="progress-bar-container">
+        <div class="progress-bar">
+            <div class="progress" id="progress"></div>
+        </div>
+    </div>
+    <div class="container" id="emoji-interface">
+        <div id="language-switch">
+            <button class="language-button" onclick="changeLanguage('en')">English</button>
+            <button class="language-button" onclick="changeLanguage('ar')">العربية</button>
+        </div>
+        <h1 id="question">كيف تقيّم الفعالية؟</h1>
+        <div class="emoji-container">
+            <button class="emoji-button" id="emoji-1" onclick="handleEmojiClick(1)" aria-label="Very Dissatisfied">
+                <img src="6.gif" alt="Very Dissatisfied">
+            </button>
+            <button class="emoji-button" id="emoji-3" onclick="handleEmojiClick(2)" aria-label="Neutral">
+                <img src="3.gif" alt="Neutral">
+            </button>
+            <button class="emoji-button" id="emoji-4" onclick="handleEmojiClick(3)" aria-label="Satisfied">
+                <img src="4.gif" alt="Satisfied">
+            </button>
+            <button class="emoji-button" id="emoji-5" onclick="handleEmojiClick(4)" aria-label="Very Satisfied">
+                <img src="5.gif" alt="Very Satisfied">
+            </button>
+        </div>
+    </div>
+
+    <div class="container mcq-container" id="mcq-interface">
+        <h1 id="mcq-question">بماذا يمكننا تحسينه؟</h1>
+        <button class="mcq-option" id="option1" onclick="handleMCQClick('خدمة العملاء')">خدمة العملاء</button>
+        <button class="mcq-option" id="option2" onclick="handleMCQClick('جودة المنتج')">جودة المنتج</button>
+        <button class="mcq-option" id="option3" onclick="handleMCQClick('التسعير')">التسعير</button>
+        <button class="mcq-option" id="option4" onclick="handleMCQClick('أخرى')">أخرى</button>
+    </div>
+
+    <div class="container thanks-container" id="thanks-interface">
+        <h1 id="thanks-message">شكراً لملاحظاتك!</h1>
+        <button class="continue-button" onclick="showOpenEndedQuestion()">تابع</button>
+    </div>
+
+    <div class="container open-ended-container" id="open-ended-interface">
+        <h1 id="open-ended-question">يرجى تقديم أي ملاحظات إضافية:</h1>
+        <textarea class="open-ended-input" id="open-ended-input" rows="4" placeholder="Your feedback here..."></textarea>
+        <button class="submit-button" onclick="submitFeedback()">إرسال</button>
+    </div>
+
+    <div class="container final-thanks-container" id="final-thanks-interface">
+        <h1 id="final-thanks-message">شكراً على ملاحظاتك القيمة!</h1>
+    </div>
+
+    <script>
+        let timer;
+        let progressInterval;
+        let satisfactionValue = null;
+        let mcqValue = null;
+
+        function changeLanguage(language) {
+            var question = document.getElementById("question");
+            var mcqQuestion = document.getElementById("mcq-question");
+            var openEndedQuestion = document.getElementById("open-ended-question");
+            var thanksMessage = document.getElementById("thanks-message");
+            var finalThanksMessage = document.getElementById("final-thanks-message");
+            var option1 = document.getElementById("option1");
+            var option2 = document.getElementById("option2");
+            var option3 = document.getElementById("option3");
+            var option4 = document.getElementById("option4");
+            var submitButton = document.querySelector(".submit-button");
+            var continueButton = document.querySelector(".continue-button");
+            var buttonSound = document.getElementById("button-sound");
+            buttonSound.play();
+
+            if (language === "ar") {
+                question.innerHTML = "كيف تقيّم الفعالية؟";
+                mcqQuestion.innerHTML = "بماذا يمكننا تحسينه؟";
+                openEndedQuestion.innerHTML = "يرجى تقديم أي ملاحظات إضافية:";
+                thanksMessage.innerHTML = "شكراً لملاحظاتك!";
+                finalThanksMessage.innerHTML = "شكراً على ملاحظاتك القيمة!";
+                option1.innerHTML = "خدمة العملاء";
+                option2.innerHTML = "جودة المنتج";
+                option3.innerHTML = "التسعير";
+                option4.innerHTML = "أخرى";
+                submitButton.innerHTML = "إرسال";
+                continueButton.innerHTML = "تابع";
+                document.title = "تقييم العملاء";
+                document.body.setAttribute("lang", "ar");
+            } else {
+                question.innerHTML = "How satisfied are you with the event?";
+                mcqQuestion.innerHTML = "What could we improve?";
+                openEndedQuestion.innerHTML = "Please provide any additional feedback:";
+                thanksMessage.innerHTML = "Thank you for your feedback!";
+                finalThanksMessage.innerHTML = "Thank you for your valuable feedback!";
+                option1.innerHTML = "Customer Service";
+                option2.innerHTML = "Product Quality";
+                option3.innerHTML = "Pricing";
+                option4.innerHTML = "Other";
+                submitButton.innerHTML = "Submit";
+                continueButton.innerHTML = "Continue";
+                document.title = "Customer Satisfaction";
+                document.body.setAttribute("lang", "en");
+            }
+        }
+
+        function playButtonSound() {
+            var buttonSound = document.getElementById("button-sound");
+            buttonSound.play();
+        }
+
+        function handleEmojiClick(value) {
+            playButtonSound();
+            satisfactionValue = value;
+            startTimer(20);
+            var emojiInterface = document.getElementById("emoji-interface");
+            var mcqInterface = document.getElementById("mcq-interface");
+
+            emojiInterface.style.opacity = 0;
+            setTimeout(() => {
+                emojiInterface.style.display = 'none';
+                mcqInterface.style.display = 'block';
+                setTimeout(() => {
+                    mcqInterface.style.opacity = 1;
+                }, 50);
+            }, 500);
+        }
+
+        function handleMCQClick(value) {
+            playButtonSound();
+            mcqValue = value;
+            showThanksScreen();
+        }
+
+        function showThanksScreen() {
+            playButtonSound();
+            startTimer(20);
+            var mcqInterface = document.getElementById("mcq-interface");
+            var thanksInterface = document.getElementById("thanks-interface");
+
+            mcqInterface.style.opacity = 0;
+            setTimeout(() => {
+                mcqInterface.style.display = 'none';
+                thanksInterface.style.display = 'block';
+                setTimeout(() => {
+                    thanksInterface.style.opacity = 1;
+                }, 50);
+            }, 500);
+        }
+
+        function showOpenEndedQuestion() {
+            playButtonSound();
+            startTimer(30);
+            var thanksInterface = document.getElementById("thanks-interface");
+            var openEndedInterface = document.getElementById("open-ended-interface");
+
+            thanksInterface.style.opacity = 0;
+            setTimeout(() => {
+                thanksInterface.style.display = 'none';
+                openEndedInterface.style.display = 'block';
+                setTimeout(() => {
+                    openEndedInterface.style.opacity = 1;
+                }, 50);
+            }, 500);
+        }
+
+        function startTimer(duration) {
+            clearTimeout(timer);
+            clearInterval(progressInterval);
+            const progressBar = document.getElementById('progress');
+            let timeLeft = duration;
+
+            progressBar.style.width = '100%';
+
+            progressInterval = setInterval(() => {
+                timeLeft--;
+                progressBar.style.width = (timeLeft / duration) * 100 + '%';
+                if (timeLeft <= 0) {
+                    clearInterval(progressInterval);
+                }
+            }, 1000);
+
+            timer = setTimeout(restartProcess, duration * 1000);
+        }
+
+        async function submitFeedback() {
+            var feedback = document.getElementById("open-ended-input").value;
+            if (feedback.trim() === "") {
+                alert("Please provide your feedback.");
+                return;
+            }
+
+            const airtableApiKey ="patJR9oVGu2C5XXQe.f5ad9b3b282c5dd77535fb0728fb1f3c5725df1e1c2331241c726a0867968d3c";
+          const airtableBaseId = "appBqd7ZLBJOBdD0c";
+          const airtableTableName = "responses";
+          const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/${airtableTableName}`;
+
+            const data = {
+                fields: {
+                    openended: feedback,
+                    satisfaction: satisfactionValue,
+                    MCQ : mcqValue // Include MCQ value
+                }
+            };
+
+            try {
+                const response = await fetch(airtableUrl, {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${airtableApiKey}`,
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(data),
+                });
+
+                if (response.ok) {
+                    showFinalThanksScreen();
+                } else {
+                    alert("There was an error submitting your feedback. Please try again.");
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                alert("There was an error submitting your feedback. Please try again.");
+            }
+        }
+
+        function showFinalThanksScreen() {
+            playButtonSound();
+            startTimer(10); // 10 seconds timer for final thanks screen
+            var openEndedInterface = document.getElementById("open-ended-interface");
+            var finalThanksInterface = document.getElementById("final-thanks-interface");
+
+            openEndedInterface.style.opacity = 0;
+            setTimeout(() => {
+                openEndedInterface.style.display = 'none';
+                finalThanksInterface.style.display = 'block';
+                setTimeout(() => {
+                    finalThanksInterface.style.opacity = 1;
+                }, 50);
+            }, 500);
+        }
+
+        function restartProcess() {
+            location.reload(); // Refresh the page
+        }
+    </script>
+</body>
+</html>
